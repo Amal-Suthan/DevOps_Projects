@@ -9,6 +9,18 @@ sudo blkid
 https://darey.io/wp-content/uploads/2021/07/blkid.png
 
 
+--
+
+#mount for web server
+
+UUID=db8adbcc-47dc-4901-a26b-123bdb3b6016 /var/log ext4 defaults 0 0
+UUID=11ba0ab5-3a8f-445e-8d17-6af624da0e45 /var/www/html ext4 defaults 0 0
+
+
+#mount for database
+UUID=bb312434-7d0f-4845-bf36-ff56355b82f1 /db ext4 defaults 0 0
+
+and add it in /etc/fstab
 ```
 sudo vi /etc/fstab
 ```
