@@ -138,12 +138,27 @@ SHOW DATABASES;
 exit
 
 ```
+OR
+--
+
+sudo mysql;
+CREATE DATABASE wordpress;
+CREATE USER 'wordpress'@'%' IDENTIFIED WITH mysql_native_password BY 'wordpress';
+GRANT ALL PRIVILEGES ON *.* TO 'wordpress'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+SHOW DATABASES;
+exit
+--
+
+
+
 
 
 Step 6 — Configure WordPress to connect to remote database.
 Hint: Do not forget to open MySQL port 3306 on DB Server EC2. For extra security, you shall allow access to the DB server ONLY from your Web Server’s IP address, 
 so in the Inbound Rule configuration specify source as /32
-
+OR
+Allow All trasffic as of testing 
 
 https://darey.io/wp-content/uploads/2021/07/DB_inbound_rule.png
 
@@ -152,7 +167,7 @@ https://darey.io/wp-content/uploads/2021/07/DB_inbound_rule.png
 
 ```
 sudo yum install mysql
-sudo mysql -u admin -p -h <DB-Server-Private-IP-address>
+sudo mysql -u wordpress -p -h <DB-Server-Private-IP-address>
 
 ```
 
