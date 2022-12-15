@@ -111,7 +111,26 @@ sudo systemctl restart httpd
   cp -R wordpress /var/www/html/
   
   ```
+  cd wordpress
+  sudo vi wp-config.php
+  ------------------------------------
+// ** Database settings - You can get this info from your web host ** //
+/** The name of the database for WordPress */
+define( 'DB_NAME', 'wordpress' );
+
+/** Database username */
+define( 'DB_USER', 'wordpress' );
+
+/** Database password */
+define( 'DB_PASSWORD', 'wordpress' );
+
+/** Database hostname */
+define( 'DB_HOST', '172.31.12.96' ); it is the private ip address od db server
+
+  ------------------------------------
   
+  
+  --
   
   7. Configure SELinux Policies
 
@@ -136,6 +155,26 @@ Verify that the service is up and running by using sudo systemctl status mysqld,
 sudo systemctl restart mysqld
 sudo systemctl enable mysqld
 ```
+
+sudo vi /etc/my.cnf
+   
+   ------------------------------
+   Replace with:
+   
+# This group is read both both by the client and the server
+# use it for options that affect everything
+#
+[client-server]
+
+#
+# include all files from the config directory
+#
+!includedir /etc/my.cnf.d
+[mysqld]
+bind-address=0.0.0.0
+
+   --------------------------------
+sudo systemctl restart mysqld
 
 
 Step 5 — Configure DB to work with WordPress
