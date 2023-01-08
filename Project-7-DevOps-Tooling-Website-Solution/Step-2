@@ -107,11 +107,11 @@ INSERT INTO ‘users’ (‘id’, ‘username’, ‘password’, ’email’, 
 into the websute with myuser user.
   
   
-![6004](https://user-images.githubusercontent.com/85270361/210139699-6c023692-c7cb-404a-80c6-848434967fe9.PNG)
+https://github.com/Amal-Suthan/DevOps_Projects/blob/main/Project-7-DevOps-Tooling-Website-Solution/images/Step-2.png?raw=true
 
   
 Congratulations!
 You have just implemented a web solution for a DevOps team using LAMP stack with remote Database and NFS servers
   
 
-![6005](https://user-images.githubusercontent.com/85270361/210139730-61025cd1-fa95-4f0f-817e-0f9e1037022c.PNG)
+
