@@ -1,0 +1,82 @@
+sudo apt update
+
+----
+
+install mysql server:
+
+sudo apt install mysql-server -y
+
+-----
+sudo mysql
+
+Create a database and name it tooling
+
+mysql> create database tooling;
+
+Create a database user and name it webacces
+Grant permission to webaccess user on tooling database to do anything only from the webservers subnet cidr
+
+mysql> create user 'webaccess'@'172.31.0.0/16' identified by 'password';
+
+cider took from webserver1->networking->VPC
+
+mysql> grant all privileges on tooling.* to 'webaccess'@'172.31.0.0/16';
+
+
+mysql> flush privileges;
+
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| tooling            |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> use tooling;
+Database changed
+
+mysql> show tables;
+
+Empty set (0.00 sec)
+
+
+-------
+
+Changing the mysql con file
+
+sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
+
+chnage to:
+
+
+bind-address            = 0.0.0.0
+mysqlx-bind-address     = 0.0.0.0
+
+
+-----
+
+restart mysql
+
+sudo systemctl restart mysql
+
+-----
+
+ sudo mysql
+ show databases;
+
+ use tooling;
+
+select * from users;
+
+
+
+
+
+
+

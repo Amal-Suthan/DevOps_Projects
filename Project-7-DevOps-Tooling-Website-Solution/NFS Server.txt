@@ -1,0 +1,229 @@
+Create 3 storage volumes with 10GB each on same AZ 
+
+Attach them to NFS Server
+
+Connect the NFS Server on putty 
+----
+
+lsblk
+
+----
+
+Creating a single partition for every disk using gdisk
+
+sudo gdisk /dev/xvdf
+---------------------------------------------------------
+output:
+
+
+[ec2-user@ip-172-31-20-58 ~]$ sudo gdisk /dev/xvdf
+GPT fdisk (gdisk) version 1.0.7
+
+Partition table scan:
+  MBR: not present
+  BSD: not present
+  APM: not present
+  GPT: not present
+
+Creating new GPT entries in memory.
+
+Command (? for help): ?
+b       back up GPT data to a file
+c       change a partition's name
+d       delete a partition
+i       show detailed information on a partition
+l       list known partition types
+n       add a new partition
+o       create a new empty GUID partition table (GPT)
+p       print the partition table
+q       quit without saving changes
+r       recovery and transformation options (experts only)
+s       sort partitions
+t       change a partition's type code
+v       verify disk
+w       write table to disk and exit
+x       extra functionality (experts only)
+?       print this menu
+
+Command (? for help): n
+Partition number (1-128, default 1): 1
+First sector (34-20971486, default = 2048) or {+-}size{KMGTP}:
+Last sector (2048-20971486, default = 20971486) or {+-}size{KMGTP}:
+Current type is 8300 (Linux filesystem)
+Hex code or GUID (L to show codes, Enter = 8300): 8e00
+Changed type of partition to 'Linux LVM'
+
+Command (? for help): p
+Disk /dev/xvdf: 20971520 sectors, 10.0 GiB
+Sector size (logical/physical): 512/512 bytes
+Disk identifier (GUID): C4F98863-6918-4B5B-BA08-BEE8A5832EC8
+Partition table holds up to 128 entries
+Main partition table begins at sector 2 and ends at sector 33
+First usable sector is 34, last usable sector is 20971486
+Partitions will be aligned on 2048-sector boundaries
+Total free space is 2014 sectors (1007.0 KiB)
+
+Number  Start (sector)    End (sector)  Size       Code  Name
+   1            2048        20971486   10.0 GiB    8E00  Linux LVM
+
+Command (? for help): w
+
+Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+PARTITIONS!!
+
+Do you want to proceed? (Y/N): y
+OK; writing new GUID partition table (GPT) to /dev/xvdf.
+The operation has completed successfully.
+[ec2-user@ip-172-31-20-58 ~]$
+
+---------------------------------------------------------
+Do same for other two partitions:
+
+sudo gdisk /dev/xvdg
+----
+sudo gdisk /dev/xvdh
+----
+Installing LVM package:
+
+sudo yum install lvm2 -y
+
+----
+
+Checking for available disk partitions
+
+sudo lvmdiskscan
+
+----
+
+Creating physical volumes 
+
+sudo pvcreate /dev/xvdf1
+
+sudo pvcreate /dev/xvdg1
+
+sudo pvcreate /dev/xvdh1
+
+----
+
+Check physical volumes using 
+
+sudo pvs
+
+----
+
+Creating volume group 
+
+sudo vgcreate webdata-vg /dev/xvdf1 /dev/xvdg1 /dev/xvdh1
+
+----
+
+check volume group using 
+
+sudo vgs
+
+----
+
+creating logical 3 volumes for lv-apps, lv-logs and lv-opt
+
+sudo lvcreate -n lv-apps -L 9G webdata-vg
+
+sudo lvcreate -n lv-logs -L 9G webdata-vg
+
+sudo lvcreate -n lv-opt -L 9G webdata-vg
+
+
+----
+
+check with 
+
+sudo lvs
+
+----
+
+Formatting the disks as xfs type
+
+sudo mkfs -t xfs /dev/webdata-vg/lv-apps
+
+sudo mkfs -t xfs /dev/webdata-vg/lv-logs
+
+sudo mkfs -t xfs /dev/webdata-vg/lv-opt
+
+----
+
+Create mount points on /mnt directory for logical volumes
+
+mount lv-apps on /mnt/apps - for web servers
+
+mount lv-logs on /mnt/logs - for web server logs
+
+mount lv-opt on /mnt/opt - for jenkins server
+
+----
+creating directory for mounting:
+
+
+sudo mkdir /mnt/apps
+
+sudo mkdir /mnt/logs
+
+sudo mkdir /mnt/opt
+
+----
+
+moutning the volume group to the mount points:
+
+
+sudo mount /dev/webdata-vg/lv-apps /mnt/apps
+
+sudo mount /dev/webdata-vg/lv-logs /mnt/logs
+
+sudo mount /dev/webdata-vg/lv-opt /mnt/opt
+
+-----
+
+Install NFS server, configure it to start on reboot and make sure it is up and running
+
+
+sudo yum -y update
+sudo yum install nfs-utils -y
+sudo systemctl start nfs-server.service
+sudo systemctl enable nfs-server.service
+sudo systemctl status nfs-server.service
+
+-----
+
+Make sure we set up permission that will allow our Web servers to read, write and execute files on NFS:
+
+sudo chown -R nobody: /mnt/apps
+sudo chown -R nobody: /mnt/logs
+sudo chown -R nobody: /mnt/opt
+
+sudo chmod -R 777 /mnt/apps
+sudo chmod -R 777 /mnt/logs
+sudo chmod -R 777 /mnt/opt
+
+sudo systemctl restart nfs-server.service
+
+-----
+
+Configure access to NFS for clients within the same subnet (example of Subnet CIDR – 172.31.0.0/16 )
+
+
+
+/mnt/apps 172.31.0.0/16(rw,sync,no_all_squash,no_root_squash)
+/mnt/logs <Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
+/mnt/opt <Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
+
+Esc + :wq!
+
+sudo exportfs -arv
+
+------
+
+Check which port is used by NFS and open it using Security Groups (add new Inbound Rule)
+
+
+rpcinfo -p | grep nfs
+
+------
+

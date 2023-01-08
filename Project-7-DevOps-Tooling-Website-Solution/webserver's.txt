@@ -1,0 +1,137 @@
+Launch a new EC2 instance with RHEL 8 Operating System
+
+-----
+Install NFS client
+
+sudo yum install nfs-utils nfs4-acl-tools -y
+
+-----
+Mount /var/www/ and target the NFS server’s export for apps
+
+sudo mkdir /var/www
+sudo mount -t nfs -o rw,nosuid <NFS-Server-Private-IP-Address>:/mnt/apps /var/www
+
+172.31.20.58
+
+Also can mount the logs
+
+sudo mount -t nfs -o rw,nosuid <NFS-Server-Private-IP-Address>:/mnt/logs /var/log/httpd
+
+
+
+-------
+
+Verify that NFS was mounted successfully by running df -h. Make sure that the changes will persist on Web Server after reboot:
+
+df -h
+
+------
+
+sudo vi /etc/fstab
+
+add following line
+
+```
+<NFS-Server-Private-IP-Address>:/mnt/apps /var/www nfs defaults 0 0
+<NFS-Server-Private-IP-Address>:/mnt/logs /var/log/httpd nfs defaults 0 0
+
+example:
+172.31.20.58:/mnt/logs /var/log/httpd nfs defaults 0 0
+
+----------------
+
+Install Remi’s repository, Apache and PHP
+
+
+```
+sudo yum install httpd -y
+
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+sudo dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+
+sudo dnf module reset php
+
+sudo dnf module enable php:remi-7.4
+
+sudo dnf install php php-opcache php-gd php-curl php-mysqlnd
+
+sudo systemctl start php-fpm
+
+sudo systemctl enable php-fpm
+
+setsebool -P httpd_execmem 1
+
+-----
+Repeat steps 1-5 for another 2 Web Servers.
+
+----
+
+Fork the tooling source code from Darey.io Github Account to your Github account.
+
+https://github.com/darey-io/tooling
+
+-----
+Install GIT on webserver
+
+sudo yum install git
+
+Clone git repo
+-----
+
+Deploy the tooling website’s code to the Webserver. Ensure that the html folder from the repository is deployed to /var/www/html
+
+sudo cp -R html/. /var/www/html
+
+
+----
+
+Do not forget to open TCP port 80 on the Web Server.
+
+----
+
+Note 2: If you encounter 403 Error – check permissions to your /var/www/html folder and also disable SELinux sudo setenforce 0
+To make this change permanent – open following config file sudo vi /etc/sysconfig/selinux and set SELINUX=disabledthen restrt httpd.
+
+
+-------
+
+Update the website’s configuration to connect to the database (in /var/www/html/functions.php file)
+
+sudo vi /var/www/html/functions.php
+
+example:
+
+$db = mysqli_connect('172.31.26.230', 'webaccess', 'password', 'tooling');
+
+----
+Install mysql client
+
+sudo yum install mysql
+
+
+Apply tooling-db.sql script to your database using this 
+command mysql -h <databse-private-ip> -u <db-username> -p <db-pasword> < tooling-db.sql
+
+example:
+
+mysql -h 172.31.26.230 -u webaccess -p tooling < tooling-db.sql
+
+
+make sure to make the binding to 0.0.0.0 on DB Server
+
+
+----
+
+
+change the default welcome page 
+
+sudo vi /etc/httpd/conf.d/welcome.conf
+
+sudo mv /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/welcome.backup
+
+sudo systemctl restart httpd
+sudo systemctl status httpd
+
+--------------
+
