@@ -49,9 +49,9 @@ To simplify, let us implement this solution with 2 Web Servers, the approach wil
 ### Prerequisites
 Make sure that you have following servers installed and configured within Project-7:
 
-1.Two RHEL8 Web Servers
-2.One MySQL DB Server (based on Ubuntu 20.04)
-3.One RHEL8 NFS server
+1. Two RHEL8 Web Servers
+2. One MySQL DB Server (based on Ubuntu 20.04)
+3. One RHEL8 NFS server
 
 ![project-8-3](https://user-images.githubusercontent.com/64862440/229158930-c65d9830-efdb-49c8-bc8e-6a59cd7ddf42.png)
 
