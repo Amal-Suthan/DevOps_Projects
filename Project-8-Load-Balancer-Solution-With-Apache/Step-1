@@ -10,3 +10,4 @@ Each URL contains a domain name part, which is translated (resolved) to IP addre
 Translation (resolution) of domain names is perormed by DNS servers, the most commonly used one has a public IP address 8.8.8.8 and belongs to Google. 
 You can try to query it with nslookup command:
 
+![project-8](https://user-images.githubusercontent.com/64862440/229152134-b032efd0-bb15-4dc5-8d8d-fb6413419fa3.png)
